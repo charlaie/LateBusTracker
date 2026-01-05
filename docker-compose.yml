@@ -1,0 +1,139 @@
+# late-bus-tracker docker compose
+# Services:
+# - db: Postgres
+# - redis: Redis (optional but useful for rate limiting / queues)
+# - api: FastAPI (read API)
+# - worker: poller + aggregation jobs
+# - web: Next.js frontend
+# - caddy: reverse proxy + HTTPS termination (optional but recommended)
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: late-bus-tracker-db
+    environment:
+      POSTGRES_DB: bus-tracker
+      POSTGRES_USER: bus-tracker
+      POSTGRES_PASSWORD: bus-tracker_password_change_me
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      # Local dev convenience. Remove in production if you don't need host access.
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U bus-tracker -d bus-tracker" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: late-bus-tracker-redis
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_data:/data
+    ports:
+      # Local dev convenience. Remove in production if you don't need host access.
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: late-bus-tracker-api
+    environment:
+      # Use a single DATABASE_URL in your FastAPI settings
+      DATABASE_URL: postgresql+asyncpg://bus-tracker:bus-tracker_password_change_me@db:5432/bus-tracker
+      REDIS_URL: redis://redis:6379/0
+
+      # App settings
+      APP_ENV: development
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      # If you compute "daily" stats, set canonical timezone for day boundaries:
+      APP_TZ: Asia/Hong_Kong
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "8000"
+    # For local dev, you can also publish the port:
+    ports:
+      - "8000:8000"
+    # Your backend Dockerfile should set the default CMD,
+    # but you can override here if you want:
+    # command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: late-bus-tracker-worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://hkbt:hkbt_password_change_me@db:5432/hkbt
+      REDIS_URL: redis://redis:6379/0
+      APP_ENV: development
+      APP_TZ: Asia/Hong_Kong
+
+      # Polling defaults — tune later
+      POLL_INTERVAL_SECONDS: "60"
+      KMB_BASE_URL: https://data.etabus.gov.hk/v1/transport/kmb
+
+      # Daily sync time (Hong Kong local time) if your worker uses it
+      DAILY_SYNC_HHMM: "05:30"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # The worker should run a different entrypoint than the API.
+    # Override the command to whatever you implement:
+    # - Example: a Python module backend/worker/main.py that starts poll loops
+    command: [ "uv", "run", "python", "-m", "worker.main" ]
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: late-bus-tracker-web
+    environment:
+      # If your Next.js uses a server-side API base:
+      API_BASE_URL: http://api:8000
+      # If you also need a browser-exposed URL, use NEXT_PUBLIC_*:
+      NEXT_PUBLIC_API_BASE_URL: /api
+      NODE_ENV: development
+    depends_on:
+      - api
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+
+  # Optional reverse proxy. In production this is how you'd do TLS easily.
+  # In dev, you can skip this service and hit :3000 and :8000 directly.
+  caddy:
+    image: caddy:2-alpine
+    container_name: late-bus-tracker-caddy
+    depends_on:
+      - web
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  db_data:
+  redis_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,103 @@
+{
+    "data": {
+        "01": [
+            {
+                "DayType": "MF        ",
+                "BoundTime1": "20-25",
+                "ServiceType_Eng": "",
+                "BoundText1": "07:10-07:55",
+                "Origin_Eng": "DIAMOND HILL STATION",
+                "ServiceType": "01   ",
+                "Destination_Chi": "香港科學園",
+                "OrderSeq": "1",
+                "Route": "272S",
+                "Destination_Eng": "HONG KONG SCIENCE PARK",
+                "BoundTime2": "15-20",
+                "Origin_Chi": "鑽石山站",
+                "BoundText2": "17:15-17:50",
+                "ServiceType_Chi": ""
+            },
+            {
+                "DayType": "MF        ",
+                "BoundTime1": "12",
+                "ServiceType_Eng": "",
+                "BoundText1": "07:55-08:07",
+                "Origin_Eng": "DIAMOND HILL STATION",
+                "ServiceType": "01   ",
+                "Destination_Chi": "香港科學園",
+                "OrderSeq": "2",
+                "Route": "272S",
+                "Destination_Eng": "HONG KONG SCIENCE PARK",
+                "BoundTime2": "8",
+                "Origin_Chi": "鑽石山站",
+                "BoundText2": "17:50-18:30",
+                "ServiceType_Chi": ""
+            },
+            {
+                "DayType": "MF        ",
+                "BoundTime1": "6 -9",
+                "ServiceType_Eng": "",
+                "BoundText1": "08:07-09:30",
+                "Origin_Eng": "DIAMOND HILL STATION",
+                "ServiceType": "01   ",
+                "Destination_Chi": "香港科學園",
+                "OrderSeq": "3",
+                "Route": "272S",
+                "Destination_Eng": "HONG KONG SCIENCE PARK",
+                "BoundTime2": "15",
+                "Origin_Chi": "鑽石山站",
+                "BoundText2": "18:30-19:15",
+                "ServiceType_Chi": ""
+            },
+            {
+                "DayType": "S         ",
+                "BoundTime1": "",
+                "ServiceType_Eng": "",
+                "BoundText1": "07:30",
+                "Origin_Eng": "DIAMOND HILL STATION",
+                "ServiceType": "01   ",
+                "Destination_Chi": "香港科學園",
+                "OrderSeq": "4",
+                "Route": "272S",
+                "Destination_Eng": "HONG KONG SCIENCE PARK",
+                "BoundTime2": "",
+                "Origin_Chi": "鑽石山站",
+                "BoundText2": "18:10",
+                "ServiceType_Chi": ""
+            },
+            {
+                "DayType": "S         ",
+                "BoundTime1": "",
+                "ServiceType_Eng": "",
+                "BoundText1": "08:10",
+                "Origin_Eng": "DIAMOND HILL STATION",
+                "ServiceType": "01   ",
+                "Destination_Chi": "香港科學園",
+                "OrderSeq": "5",
+                "Route": "272S",
+                "Destination_Eng": "HONG KONG SCIENCE PARK",
+                "BoundTime2": "",
+                "Origin_Chi": "鑽石山站",
+                "BoundText2": "18:35",
+                "ServiceType_Chi": ""
+            },
+            {
+                "DayType": "S         ",
+                "BoundTime1": "",
+                "ServiceType_Eng": "",
+                "BoundText1": "08:45",
+                "Origin_Eng": "DIAMOND HILL STATION",
+                "ServiceType": "01   ",
+                "Destination_Chi": "香港科學園",
+                "OrderSeq": "6",
+                "Route": "272S",
+                "Destination_Eng": "HONG KONG SCIENCE PARK",
+                "BoundTime2": "",
+                "Origin_Chi": "鑽石山站",
+                "BoundText2": "",
+                "ServiceType_Chi": ""
+            }
+        ]
+    },
+    "result": true
+}
