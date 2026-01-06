@@ -6,7 +6,6 @@ from kmb_api_models import (
     RouteListResponse,
     RouteResponse,
     RouteStopListResponse,
-    RouteStopResponse,
     StopListResponse,
     StopResponse,
 )

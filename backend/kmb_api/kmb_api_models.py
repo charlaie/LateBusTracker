@@ -108,19 +108,6 @@ class RouteStopData(BaseModel):
     """The ID of a bus stop."""
 
 
-class RouteStopResponse(BaseModel):
-    """Route-Stop response model."""
-
-    type: str
-    """The corresponding API that returns the data. The value will always be "RouteStop" or "RouteStopList"."""
-    version: str
-    """The version number of the JSON returned. The version number in major and minor versioning format."""
-    generated_timestamp: str
-    """The timestamp of the initial generated time of the response before it is cached. Date time with the time zone in ISO 8601 format."""
-    data: RouteStopData
-    """The object that of the data requested. Empty data object denotes data not available. For the List API, data is returned in an array of objects."""
-
-
 class RouteStopListResponse(BaseModel):
     """Route-Stop List response model."""
 
