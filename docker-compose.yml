@@ -77,7 +77,8 @@ services:
       dockerfile: Dockerfile
     container_name: late-bus-tracker-worker
     environment:
-      DATABASE_URL: postgresql+asyncpg://hkbt:hkbt_password_change_me@db:5432/hkbt
+      # Match the Postgres service credentials above
+      DATABASE_URL: postgresql+asyncpg://bus-tracker:bus-tracker_password_change_me@db:5432/bus-tracker
       REDIS_URL: redis://redis:6379/0
       APP_ENV: development
       APP_TZ: Asia/Hong_Kong
