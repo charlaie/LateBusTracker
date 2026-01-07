@@ -1,7 +1,7 @@
 from typing import Literal
 
 import aiohttp
-from kmb_api_models import (
+from .kmb_api_models import (
     EtaListResponse,
     RouteListResponse,
     RouteResponse,
