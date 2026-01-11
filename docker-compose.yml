@@ -19,7 +19,7 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       # Local dev convenience. Remove in production if you don't need host access.
-      - "5432:5432"
+      - "${DB_PORT:-8001}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U bus-tracker -d bus-tracker" ]
       interval: 5s
@@ -34,7 +34,7 @@ services:
       - redis_data:/data
     ports:
       # Local dev convenience. Remove in production if you don't need host access.
-      - "6379:6379"
+      - "${REDIS_PORT:-8002}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
@@ -66,7 +66,7 @@ services:
       - "8000"
     # For local dev, you can also publish the port:
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     # Your backend Dockerfile should set the default CMD,
     # but you can override here if you want:
     # command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -115,7 +115,7 @@ services:
     expose:
       - "3000"
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
 
   # Optional reverse proxy. In production this is how you'd do TLS easily.
   # In dev, you can skip this service and hit :3000 and :8000 directly.
