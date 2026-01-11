@@ -1,7 +1,7 @@
 from __future__ import annotations
 import asyncio
 
-from collections.abc import Mapping, Sequence
+from common.db.utils import chunk_rows
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -21,13 +21,6 @@ from app.models import (
     KmbWebRouteStop,
     KmbWebSchedule,
 )
-
-
-def _chunks(
-    rows: Sequence[Mapping[str, object]], size: int
-) -> list[Sequence[Mapping[str, object]]]:
-    """Split rows into batches to avoid asyncpg's max bind-parameter limit."""
-    return [rows[i : i + size] for i in range(0, len(rows), size)]
 
 
 async def ingest_kmb_reference_data(
@@ -59,7 +52,7 @@ async def ingest_kmb_reference_data(
         for r in route_list.data
     ]
     if routes_rows:
-        for batch in _chunks(routes_rows, 300):
+        for batch in chunk_rows(routes_rows, 300):
             stmt = insert(KmbRoute).values(batch)
             stmt = stmt.on_conflict_do_update(
                 index_elements=["route", "bound", "service_type"],
@@ -87,7 +80,7 @@ async def ingest_kmb_reference_data(
         for s in stop_list.data
     ]
     if stops_rows:
-        for batch in _chunks(stops_rows, 300):
+        for batch in chunk_rows(stops_rows, 300):
             stmt = insert(KmbStop).values(batch)
             stmt = stmt.on_conflict_do_update(
                 index_elements=["stop_id"],
@@ -113,7 +106,7 @@ async def ingest_kmb_reference_data(
         for rs in route_stop_list.data
     ]
     if route_stops_rows:
-        for batch in _chunks(route_stops_rows, 300):
+        for batch in chunk_rows(route_stops_rows, 300):
             stmt = insert(KmbRouteStop).values(batch)
             stmt = stmt.on_conflict_do_update(
                 constraint="uq_kmb_route_stops_route_bound_service_seq",
@@ -192,7 +185,7 @@ async def ingest_kmb_route_eta(
         )
 
     if eta_rows:
-        for batch in _chunks(eta_rows, 300):
+        for batch in chunk_rows(eta_rows, 300):
             stmt = insert(KmbEta).values(batch)
             # Time-series insert; de-dupe if the upstream response is cached and
             # returns the same generated_timestamp for the same natural key.
@@ -227,7 +220,7 @@ async def ingest_kmb_web_stops_and_schedule(
         for b in bounds_resp.data
     ]
     if bounds_rows:
-        for batch in _chunks(bounds_rows, 500):
+        for batch in chunk_rows(bounds_rows, 500):
             stmt = insert(KmbWebRouteBound).values(batch)
             stmt = stmt.on_conflict_do_update(
                 index_elements=["route", "bound", "service_type"],
@@ -264,7 +257,7 @@ async def ingest_kmb_web_stops_and_schedule(
             )
 
     if stops_rows:
-        for batch in _chunks(stops_rows, 200):
+        for batch in chunk_rows(stops_rows, 200):
             stmt = insert(KmbWebRouteStop).values(batch)
             stmt = stmt.on_conflict_do_update(
                 index_elements=["route", "bound", "service_type", "seq"],
@@ -312,7 +305,7 @@ async def ingest_kmb_web_stops_and_schedule(
                 )
 
     if schedule_rows:
-        for batch in _chunks(schedule_rows, 150):
+        for batch in chunk_rows(schedule_rows, 150):
             stmt = insert(KmbWebSchedule).values(batch)
             stmt = stmt.on_conflict_do_update(
                 index_elements=["route", "service_type", "day_type", "order_seq"],
