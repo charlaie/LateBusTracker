@@ -2,16 +2,18 @@ from __future__ import annotations
 import asyncio
 
 from collections.abc import Mapping, Sequence
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import AsyncSessionLocal, get_db_session, init_db
+from app.db import get_db_session, init_db
 from common.kmb_eta_client import KmbEtaClient
-from common.kmb_api_client import KmbApiClient
+from common.kmb_web_api_client import KmbWebApiClient
 
 from app.models import (
+    KmbEta,
     KmbRoute,
     KmbRouteStop,
     KmbStop,
@@ -128,10 +130,86 @@ async def ingest_kmb_reference_data(
     }
 
 
+async def ingest_kmb_route_eta(
+    session: AsyncSession,
+    route: str,
+    service_type: int,
+    eta_client: KmbEtaClient | None = None,
+) -> dict[str, int]:
+    """Ingest latest ETA snapshot for all stops on a route (KMB Route ETA API).
+
+    Upserts into `kmb_etas` keyed by (route, bound, service_type, seq, eta_seq).
+    """
+    eta_client = eta_client or KmbEtaClient()
+
+    # Build a mapping for stop_id resolution: (bound, seq) -> stop_id
+    rs_result = await session.execute(
+        select(KmbRouteStop.bound, KmbRouteStop.seq, KmbRouteStop.stop_id).where(
+            KmbRouteStop.route == route,
+            KmbRouteStop.service_type == str(service_type),
+        )
+    )
+    stop_lookup: dict[tuple[str, int], str] = {
+        (bound, seq): stop_id for (bound, seq, stop_id) in rs_result.all()
+    }
+
+    resp = await eta_client.get_route_eta(route, service_type)
+    fetched_at = datetime.now(timezone.utc)
+    try:
+        generated_at = datetime.fromisoformat(resp.generated_timestamp)
+    except Exception:
+        generated_at = None
+
+    eta_rows: list[dict[str, object]] = []
+    for e in resp.data:
+        eta_dt: datetime | None
+        if e.eta:
+            try:
+                eta_dt = datetime.fromisoformat(e.eta)
+            except Exception:
+                eta_dt = None
+        else:
+            eta_dt = None
+
+        eta_rows.append(
+            {
+                "route": e.route,
+                "bound": e.dir,
+                "service_type": str(e.service_type),
+                "seq": int(e.seq),
+                "eta_seq": int(e.eta_seq),
+                "stop_id": stop_lookup.get((e.dir, int(e.seq))),
+                "dest_tc": e.dest_tc,
+                "dest_sc": e.dest_sc,
+                "dest_en": e.dest_en,
+                "eta": eta_dt,
+                "rmk_tc": e.rmk_tc,
+                "rmk_sc": e.rmk_sc,
+                "rmk_en": e.rmk_en,
+                "fetched_at": fetched_at,
+                "generated_at": generated_at,
+            }
+        )
+
+    if eta_rows:
+        for batch in _chunks(eta_rows, 300):
+            stmt = insert(KmbEta).values(batch)
+            # Time-series insert; de-dupe if the upstream response is cached and
+            # returns the same generated_timestamp for the same natural key.
+            stmt = stmt.on_conflict_do_nothing(
+                constraint="uq_kmb_etas_natural_generated_at"
+            )
+            await session.execute(stmt)
+
+    await session.commit()
+
+    return {"etas": len(eta_rows)}
+
+
 async def ingest_kmb_web_stops_and_schedule(
     session: AsyncSession,
     route_id: str,
-    api: KmbApiClient | None = None,
+    api: KmbWebApiClient | None = None,
 ) -> dict[str, int]:
     """Ingest route-specific KMB data from the KMB 'search' site API.
 
@@ -141,7 +219,7 @@ async def ingest_kmb_web_stops_and_schedule(
     - Schedule (getschedule) [saved once; fetched for the first bound]
     """
 
-    api = api or KmbApiClient()
+    api = api or KmbWebApiClient()
 
     bounds_resp = await api.get_bounds(route_id)
     bounds_rows = [

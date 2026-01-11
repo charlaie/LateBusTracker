@@ -1,11 +1,11 @@
-"""Test script for KmbApiClient to verify models and API connectivity."""
+"""Test script for KmbWebApiClient to verify models and API connectivity."""
 
 import asyncio
 
-from .kmb_api_client import KmbApiClient
+from .kmb_web_api_client import KmbWebApiClient
 
 
-async def test_get_bounds(client: KmbApiClient, route: str):
+async def test_get_bounds(client: KmbWebApiClient, route: str):
     """Test get_bounds function."""
     print(f"Testing get_bounds('{route}')...", end=" ")
     try:
@@ -18,7 +18,7 @@ async def test_get_bounds(client: KmbApiClient, route: str):
         return None
 
 
-async def test_get_schedule(client: KmbApiClient, route: str, bound: int):
+async def test_get_schedule(client: KmbWebApiClient, route: str, bound: int):
     """Test get_schedule function."""
     print(f"Testing get_schedule('{route}', {bound})...", end=" ")
     try:
@@ -30,7 +30,7 @@ async def test_get_schedule(client: KmbApiClient, route: str, bound: int):
         return None
 
 
-async def test_get_stops(client: KmbApiClient, route: str, bound: int):
+async def test_get_stops(client: KmbWebApiClient, route: str, bound: int):
     """Test get_stops function."""
     print(f"Testing get_stops('{route}', {bound})...", end=" ")
     try:
@@ -49,7 +49,7 @@ async def main():
     print("=" * 60)
     print()
 
-    client = KmbApiClient()
+    client = KmbWebApiClient()
     test_results = {"passed": 0, "failed": 0}
 
     # Use a common route for testing

@@ -2,10 +2,10 @@ import asyncio
 
 import aiohttp
 
-from .kmb_api_models import GetBoundsResponse, GetScheduleResponse, GetStopsResponse
+from .kmb_web_api_models import GetBoundsResponse, GetScheduleResponse, GetStopsResponse
 
 
-class KmbApiClient:
+class KmbWebApiClient:
     async def get_bounds(self, route_id: str) -> GetBoundsResponse:
         url = f"https://search.kmb.hk/KMBWebSite/Function/FunctionRequest.ashx?action=getroutebound&route={route_id}"
         async with aiohttp.ClientSession() as session:
@@ -32,5 +32,5 @@ class KmbApiClient:
 
 
 if __name__ == "__main__":
-    result = asyncio.run(KmbApiClient().get_schedule("272s", 1))
+    result = asyncio.run(KmbWebApiClient().get_schedule("272s", 1))
     print(result.model_dump_json(indent=2))

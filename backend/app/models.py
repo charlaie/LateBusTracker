@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import Float, Index, Integer, String, UniqueConstraint
+from datetime import datetime
+
+from sqlalchemy import DateTime, Float, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -132,3 +134,60 @@ class KmbWebSchedule(Base):
     service_type_chi: Mapped[str] = mapped_column(String(50), nullable=False)
 
     __table_args__ = (Index("ix_kmb_web_schedules_route", "route"),)
+
+
+class KmbEta(Base):
+    """Latest ETA snapshot rows from KMB data.etabus.gov.hk.
+
+    Notes:
+    - The upstream Route ETA response does not reliably include stop_id in our
+      current Pydantic model, so ingestion can derive it via `kmb_route_stops`
+      using (route, bound, service_type, seq).
+      ingestions update these rows.
+    """
+
+    __tablename__ = "kmb_etas"
+
+    # Surrogate key so we can store time-series snapshots (polled every minute).
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    route: Mapped[str] = mapped_column(String(10), nullable=False)
+    bound: Mapped[str] = mapped_column(String(1), nullable=False)  # "I" / "O"
+    service_type: Mapped[str] = mapped_column(String(4), nullable=False)
+    seq: Mapped[int] = mapped_column(Integer, nullable=False)
+    eta_seq: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    stop_id: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
+    dest_tc: Mapped[str] = mapped_column(String(200), nullable=False)
+    dest_sc: Mapped[str] = mapped_column(String(200), nullable=False)
+    dest_en: Mapped[str] = mapped_column(String(200), nullable=False)
+
+    eta: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    rmk_tc: Mapped[str] = mapped_column(Text, nullable=False)
+    rmk_sc: Mapped[str] = mapped_column(Text, nullable=False)
+    rmk_en: Mapped[str] = mapped_column(Text, nullable=False)
+
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    generated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "route",
+            "bound",
+            "service_type",
+            "seq",
+            "eta_seq",
+            "generated_at",
+            name="uq_kmb_etas_natural_generated_at",
+        ),
+        Index("ix_kmb_etas_route", "route"),
+        Index("ix_kmb_etas_stop_id", "stop_id"),
+        Index("ix_kmb_etas_eta", "eta"),
+        Index("ix_kmb_etas_fetched_at", "fetched_at"),
+    )
