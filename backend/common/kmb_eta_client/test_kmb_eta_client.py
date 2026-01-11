@@ -3,10 +3,10 @@
 import asyncio
 from typing import Literal
 
-from kmb_api import KmbApi
+from .kmb_eta_client import KmbEtaClient
 
 
-async def test_get_route_list(api: KmbApi):
+async def test_get_route_list(api: KmbEtaClient):
     """Test get_route_list_ function."""
     print("Testing get_route_list_()...", end=" ")
     try:
@@ -19,7 +19,7 @@ async def test_get_route_list(api: KmbApi):
 
 
 async def test_get_route(
-    api: KmbApi,
+    api: KmbEtaClient,
     route: str,
     direction: Literal["outbound", "inbound"],
     service_type: int,
@@ -35,7 +35,7 @@ async def test_get_route(
         return None
 
 
-async def test_get_stop_list(api: KmbApi):
+async def test_get_stop_list(api: KmbEtaClient):
     """Test get_stop_list function."""
     print("Testing get_stop_list()...", end=" ")
     try:
@@ -47,7 +47,7 @@ async def test_get_stop_list(api: KmbApi):
         return None
 
 
-async def test_get_stop(api: KmbApi, stop_id: str):
+async def test_get_stop(api: KmbEtaClient, stop_id: str):
     """Test get_stop function."""
     print(f"Testing get_stop('{stop_id}')...", end=" ")
     try:
@@ -59,7 +59,7 @@ async def test_get_stop(api: KmbApi, stop_id: str):
         return None
 
 
-async def test_get_route_stop_list(api: KmbApi):
+async def test_get_route_stop_list(api: KmbEtaClient):
     """Test get_route_stop_list function."""
     print("Testing get_route_stop_list()...", end=" ")
     try:
@@ -72,7 +72,7 @@ async def test_get_route_stop_list(api: KmbApi):
 
 
 async def test_get_route_stop(
-    api: KmbApi,
+    api: KmbEtaClient,
     route: str,
     direction: Literal["outbound", "inbound"],
     service_type: int,
@@ -90,7 +90,7 @@ async def test_get_route_stop(
         return None
 
 
-async def test_get_eta(api: KmbApi, stop_id: str, route: str, service_type: int):
+async def test_get_eta(api: KmbEtaClient, stop_id: str, route: str, service_type: int):
     """Test get_eta function."""
     print(f"Testing get_eta('{stop_id}', '{route}', {service_type})...", end=" ")
     try:
@@ -102,7 +102,7 @@ async def test_get_eta(api: KmbApi, stop_id: str, route: str, service_type: int)
         return None
 
 
-async def test_get_stop_eta(api: KmbApi, stop_id: str):
+async def test_get_stop_eta(api: KmbEtaClient, stop_id: str):
     """Test get_stop_eta function."""
     print(f"Testing get_stop_eta('{stop_id}')...", end=" ")
     try:
@@ -114,7 +114,7 @@ async def test_get_stop_eta(api: KmbApi, stop_id: str):
         return None
 
 
-async def test_get_route_eta(api: KmbApi, route: str, service_type: int):
+async def test_get_route_eta(api: KmbEtaClient, route: str, service_type: int):
     """Test get_route_eta function."""
     print(f"Testing get_route_eta('{route}', {service_type})...", end=" ")
     try:
@@ -133,7 +133,7 @@ async def main():
     print("=" * 60)
     print()
 
-    api = KmbApi()
+    api = KmbEtaClient()
     test_results = {"passed": 0, "failed": 0}
 
     # Test 1: Get route list (needed for other tests)

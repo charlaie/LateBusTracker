@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     api_port: int = Field(8000, alias="API_PORT")
     app_tz: str = Field("Asia/Hong_Kong", alias="APP_TZ")
 
+    redis_url: str = Field("redis://redis:6379/0", alias="REDIS_URL")
+
     # Worker defaults
     poll_interval_seconds: int = Field(60, alias="POLL_INTERVAL_SECONDS")
 

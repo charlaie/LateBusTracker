@@ -68,7 +68,7 @@ class GetBoundsData(BaseModel):
 
 
 class GetBoundsResponse(BaseModel):
-    data: GetBoundsData
+    data: list[GetBoundsData]
     result: bool
 
 

@@ -3,6 +3,6 @@
 This wraps the Hong Kong KMB open data endpoints and exposes typed Pydantic models.
 """
 
-from .kmb_api import KmbApi
+from .kmb_eta_client import KmbEtaClient
 
-__all__ = ["KmbApi"]
+__all__ = ["KmbEtaClient"]

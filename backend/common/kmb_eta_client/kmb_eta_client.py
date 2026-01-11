@@ -1,7 +1,7 @@
 from typing import Literal
 
 import aiohttp
-from .kmb_api_models import (
+from .kmb_eta_models import (
     EtaListResponse,
     RouteListResponse,
     RouteResponse,
@@ -11,7 +11,7 @@ from .kmb_api_models import (
 )
 
 
-class KmbApi:
+class KmbEtaClient:
     BASE_URL = "https://data.etabus.gov.hk/"
 
     async def get_route_list_(self) -> RouteListResponse:
