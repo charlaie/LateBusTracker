@@ -10,7 +10,7 @@ async def test_get_route_list(api: KmbEtaClient):
     """Test get_route_list_ function."""
     print("Testing get_route_list_()...", end=" ")
     try:
-        result = await api.get_route_list_()
+        result = await api.get_route_list()
         print(f"✓ Success - Got {len(result.data)} routes")
         return result
     except Exception as e:

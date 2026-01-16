@@ -14,7 +14,7 @@ from .kmb_eta_models import (
 class KmbEtaClient:
     BASE_URL = "https://data.etabus.gov.hk/"
 
-    async def get_route_list_(self) -> RouteListResponse:
+    async def get_route_list(self) -> RouteListResponse:
         """This API return all bus routes of KMB."""
         async with aiohttp.ClientSession() as session:
             async with session.get(

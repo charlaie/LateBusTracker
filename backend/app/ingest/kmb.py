@@ -36,7 +36,7 @@ async def ingest_kmb_reference_data(
 
     eta_client = eta_client or KmbEtaClient()
 
-    route_list = await eta_client.get_route_list_()
+    route_list = await eta_client.get_route_list()
     routes_rows = [
         {
             "route": r.route,
